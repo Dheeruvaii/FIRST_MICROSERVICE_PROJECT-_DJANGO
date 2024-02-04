@@ -18,8 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
         return instance
     
     
-class FavoriteProductSerializer(serializers.Serializer):
-     user_id = serializers.IntegerField()
-     product_id = serializers.IntegerField()
+class FavoriteProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavoriteProduct
+        fields = '__all__'
+
        
    

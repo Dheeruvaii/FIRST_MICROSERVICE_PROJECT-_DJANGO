@@ -13,47 +13,47 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 # from ...UserAuthenticationService.users.producer import publish
-from .producer import publish
+# from .producer import publish
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
-    # def get_authenticators(self):
-    #     if self.action_map.get('put') or self.action_map.get('delete'):
-    #         return [TokenAuthentication()]
-    #     return super().get_authenticators()
+    # # def get_authenticators(self):
+    # #     if self.action_map.get('put') or self.action_map.get('delete'):
+    # #         return [TokenAuthentication()]
+    # #     return super().get_authenticators()
 
-    # def get_permissions(self):
-    #     if self.action_map.get('put') or self.action_map.get('delete'):
-    #         return [IsAuthenticated()]
-    #     return super().get_permissions()
+    # # def get_permissions(self):
+    # #     if self.action_map.get('put') or self.action_map.get('delete'):
+    # #         return [IsAuthenticated()]
+    # #     return super().get_permissions()
 
-    def get_user_id_from_token(self, token):
-        try:
-            authentication = JWTAuthentication()
-            validated_token = authentication.get_validated_token(token)
-            user = authentication.get_user(validated_token)
-            return user.id
-        except TokenError:
-            # Token is either expired or invalid
-            return None
+    # def get_user_id_from_token(self, token):
+    #     try:
+    #         authentication = JWTAuthentication()
+    #         validated_token = authentication.get_validated_token(token)
+    #         user = authentication.get_user(validated_token)
+    #         return user.id
+    #     except TokenError:
+    #         # Token is either expired or invalid
+    #         return None
 
-    def retrieve(self, request, *args, **kwargs):
-        user_id_from_access_token = self.get_user_id_from_token(request.COOKIES.get('access_token'))
-        if user_id_from_access_token:
-            # Token is valid, get the user from the database
-            try:
-                user = User.objects.get(pk=user_id_from_access_token)
-                serializer = self.get_serializer(user)
-                return Response(serializer.data)
-            except User.DoesNotExist:
-                return Response({"detail": "User not found."}, status=404)
-        else:
-            return Response({"detail": "Invalid or expired access token."}, status=401)
+    # def retrieve(self, request, *args, **kwargs):
+    #     user_id_from_access_token = self.get_user_id_from_token(request.COOKIES.get('access_token'))
+    #     if user_id_from_access_token:
+    #         # Token is valid, get the user from the database
+    #         try:
+    #             user = User.objects.get(pk=user_id_from_access_token)
+    #             serializer = self.get_serializer(user)
+    #             return Response(serializer.data)
+    #         except User.DoesNotExist:
+    #             return Response({"detail": "User not found."}, status=404)
+    #     else:
+    #         return Response({"detail": "Invalid or expired access token."}, status=401)
 
-    # Add similar logic for other viewset actions like create, update, delete, etc.
-    # Ensure that the access token is validated before performing any sensitive operations.
+    # # Add similar logic for other viewset actions like create, update, delete, etc.
+    # # Ensure that the access token is validated before performing any sensitive operations.
 
 
 class UserLoginView(TokenObtainPairView):
@@ -78,17 +78,17 @@ class UserLoginView(TokenObtainPairView):
     
 
 class FavoriteProductViewSet(ViewSet):
+    queryset=FavoriteProduct.objects.all()
+    serializer_class=FavoriteProductSerializer
     def create(self, request):
         serializer = FavoriteProductSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        user_id = serializer.validated_data['user_id']  # Temporarily using a fixed user ID for testing
-        product_id = serializer.validated_data['product_id']
+        serializer.save()
 
         # Publish the message to RabbitMQ
-        publish(user_id, product_id)
+        publish('product-created',serializer.data)
 
-        return Response({'message': 'Favorite product request sent'})
+        return Response(serializer.data)
 
 
 # class FavProductsViewSet(ModelViewSet):
