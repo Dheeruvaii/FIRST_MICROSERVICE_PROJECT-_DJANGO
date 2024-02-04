@@ -19,6 +19,6 @@ class User(AbstractBaseUser):
     REQUIRED_FIELDS = ['email']
 
     objects = UserManager()
-# class FavoriteProductSerializer(serializers.Serializer):
-#     user_id = serializers.IntegerField()
-#     product_id = serializers.IntegerField()
+class FavoriteProductSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    product_id = serializers.IntegerField()
